@@ -1,5 +1,7 @@
-from bs4 import BeautifulSoup
-import requests
+
+from classes.ArgsParse import ParseArgs
+from classes.CommandArgs import CommandArgs
+from classes.Scraper import Scraper
 from db.init import engine, Session, Base
 
 from db.models.article import Article, ArticleSchema
@@ -7,26 +9,6 @@ from db.models.article import Article, ArticleSchema
 
 def init_db():
     Base.metadata.create_all(engine)
-
-def get_articles_list():
-    res = requests.get("https://finance.yahoo.com/topic/stock-market-news")
-    soup = BeautifulSoup(res.text, "html.parser")
-
-    news_articles = soup.findAll(name="div", class_="Cf")
-    articles = []
-
-    for article in news_articles:
-        link = article.find(name="a")
-        link_text = link.getText()
-        link_href = link.get("href")
-        extended_text = ''
-        if paragraph := article.find(name="p"):
-            extended_text = paragraph.getText()
-
-        article_dict = {"title": link_text, "link": link_href, "paragraph": extended_text}
-        articles.append(article_dict)
-
-    return articles
 
 
 def insert_articles_to_db(articles):
@@ -50,16 +32,27 @@ def get_all_articles():
 
 def get_article_by_title(title):
     session = Session()
-    article_found = {
-        session.query(Article)
-        .filter(Article.title==title)
-        .first()
-    }
+    article_found = session.query(Article).filter(Article.title==title).first()
     session.close()
     return article_found
 
-if __name__ == '__main__':
-    articles_list = get_articles_list()
+def get_default_command_args():
+    url_arg = CommandArgs(["-u", "--url"], str,
+                          help="url to scrape",
+                          default="https://finance.yahoo.com/topic/stock-market-news"
+                          )
+    return [url_arg]
+
+
+def main():
+    argsParser = ParseArgs(get_default_command_args())
+    args = argsParser.get_args()
     init_db()
-    insert_articles_to_db(articles_list)
+    scraper = Scraper(args.url)
+    articles = scraper.get_articles_list()
+    insert_articles_to_db(articles)
     get_all_articles()
+
+
+if __name__ == '__main__':
+    main()
