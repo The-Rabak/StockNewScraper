@@ -13,7 +13,6 @@ class urlValidator(BaseValidator):
 
     def validate_url(self):
         url_regex = re.compile(r"(?i)\b((?:https?://|www\d{0,3}[.]|[a-z0-9.\-]+[.][a-z]{2,4}/)(?:[^\s()<>]+|\(([^\s()<>]+|(\([^\s()<>]+\)))*\))+(?:\(([^\s()<>]+|(\([^\s()<>]+\)))*\)|[^\s`!()\[\]{};:'\".,<>?«»“”‘’]))")
-
         if not url_regex.search(self.url):
             return self.get_url_err_str()
         return None

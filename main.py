@@ -1,6 +1,7 @@
 
 from classes.ArgsParse import ParseArgs
 from classes.CommandArgs import CommandArgs
+from classes.EmailDriver import EmailDriver
 from classes.Scraper import Scraper
 from db.init import engine, Session, Base
 
@@ -55,4 +56,7 @@ def main():
 
 
 if __name__ == '__main__':
-    main()
+    #main()
+
+    email = EmailDriver()
+    email.send_simple_email("raistandantilus@gmail.com", "lads", "whoda thunk it")
